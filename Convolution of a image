@@ -1,0 +1,186 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "accelerator": "GPU",
+    "colab": {
+      "name": "3 Seminar",
+      "private_outputs": true,
+      "provenance": [],
+      "collapsed_sections": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ovWjU5JWHJgn"
+      },
+      "source": [
+        "## CNN\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "8pdqxndZTXIV"
+      },
+      "source": [
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "import torchvision.models as models\n",
+        "%matplotlib inline"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "tXde23OBTxAv"
+      },
+      "source": [
+        "!wget http://placekitten.com/200/300 -O cat.jpg "
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "a32r44LBTxiq"
+      },
+      "source": [
+        "from PIL import Image\n",
+        "\n",
+        "image = Image.open(\"cat.jpg\")\n",
+        "fig, ax = plt.subplots(figsize=(18, 8))\n",
+        "ax.imshow(image)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "zyrUj9UxYjHS"
+      },
+      "source": [
+        "AlexNet is the perfect model for demonstration. It has big kernels in the begging, and they compute easy-to-understand feature pics."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "knV3VbMPT-pl"
+      },
+      "source": [
+        "model = models.alexnet(pretrained=True)\n",
+        "print(\n",
+        "    \"\\n\".join(\n",
+        "        f\"Name: {n}, module:{m}\"\n",
+        "        for n, m in list(model.features.named_modules())[1:]\n",
+        "    )\n",
+        ")"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "unaaO7bMY-wo"
+      },
+      "source": [
+        "Show the starting kernels."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "TthD14vIT-l7"
+      },
+      "source": [
+        "_, ax = plt.subplots(5, 5, figsize=(10, 10))\n",
+        "for i in range(25):\n",
+        "    w = model.features[0].weight[i].detach().numpy()[0]\n",
+        "    w = (w - w.min()) / (w.max() - w.min())\n",
+        "    ax[i // 5, i % 5].imshow(w, cmap=\"gray\")"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "BcZ_D601jOpc"
+      },
+      "source": [
+        "Try convolute operation with kernels, which have horizontal or vertical lines. They might have maximum activation in specific regions."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "YadxEq8oUVoe"
+      },
+      "source": [
+        "from scipy import signal\n",
+        "\n",
+        "\n",
+        "def convolute(w):\n",
+        "    \"\"\"\n",
+        "    Quick written function for showing convolution results\n",
+        "    \"\"\"\n",
+        "    new_image = signal.convolve2d(np.array(image)[:,:,0], w)\n",
+        "    _, ax = plt.subplots(1, 3, figsize=(10, 5))\n",
+        "    ax[0].imshow(np.array(image), cmap='gray')\n",
+        "    ax[2].imshow(new_image, cmap='gray')\n",
+        "    ax[1].imshow(w, cmap='gray')"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "0v7EG4UIUVlu"
+      },
+      "source": [
+        "convolute(model.features[0].weight[3].detach().numpy()[0])"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "q3YSC0LhT-e8"
+      },
+      "source": [
+        "convolute(model.features[0].weight[4].detach().numpy()[0])"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "2WIPLcYGT-W0"
+      },
+      "source": [
+        "convolute(model.features[0].weight[0].detach().numpy()[0])"
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
